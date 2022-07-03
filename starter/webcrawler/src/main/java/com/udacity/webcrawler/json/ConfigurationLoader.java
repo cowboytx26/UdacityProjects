@@ -3,7 +3,13 @@ package com.udacity.webcrawler.json;
 import java.io.Reader;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.BufferedReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * A static utility class that loads a JSON configuration file.
@@ -26,8 +32,16 @@ public final class ConfigurationLoader {
    */
   public CrawlerConfiguration load() {
     // TODO: Fill in this method.
+    // create a reader to pass to read()
+    // the reader should be based on a JSON file in the "path" path
+    // make sure to close the file
 
-    return new CrawlerConfiguration.Builder().build();
+    try (BufferedReader reader = Files.newBufferedReader(path)) {
+      return read(reader);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -36,21 +50,27 @@ public final class ConfigurationLoader {
    * @param reader a Reader pointing to a JSON string that contains crawler configuration.
    * @return a crawler configuration
    */
-  public static CrawlerConfiguration read(Reader reader) {
-    // This is here to get rid of the unused variable warning.
-    //Objects.requireNonNull(reader);
+  public static CrawlerConfiguration read(Reader reader) throws IOException {
     // TODO: Fill in this method
     ObjectMapper objectMapper = new ObjectMapper();
-    CrawlerConfiguration config = ObjectMapper().readValue(reader, CrawlerConfiguration.class);
-    return new CrawlerConfiguration.Builder()
-            .addStartPages(String.valueOf(config.getStartPages()))
-            .addIgnoredUrls(String.valueOf(config.getIgnoredUrls()))
-            .addIgnoredWords(String.valueOf(config.getIgnoredWords()))
-            .setParallelism(config.getParallelism())
-            .setImplementationOverride(config.getImplementationOverride())
-            .setMaxDepth(config.getMaxDepth())
-            .setTimeoutSeconds(config.getTimeout().toSecondsPart())
-            .setResultPath(config.getResultPath())
-            .build();
+    objectMapper.disable(com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE);
+    try {
+      CrawlerConfiguration config = objectMapper.readValue(reader, CrawlerConfiguration.class);
+      return new CrawlerConfiguration.Builder()
+              .addStartPages(String.valueOf(config.getStartPages()))
+              .addIgnoredUrls(String.valueOf(config.getIgnoredUrls()))
+              .addIgnoredWords(String.valueOf(config.getIgnoredWords()))
+              .setParallelism(config.getParallelism())
+              .setImplementationOverride(config.getImplementationOverride())
+              .setMaxDepth(config.getMaxDepth())
+              .setTimeoutSeconds(config.getTimeout().toSecondsPart())
+              .setResultPath(config.getResultPath())
+              .build();
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw e;
+    } finally {
+      if (reader != null) reader.close();
+    }
   }
 }
