@@ -56,21 +56,10 @@ public final class ConfigurationLoader {
     objectMapper.disable(com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE);
     try {
       CrawlerConfiguration config = objectMapper.readValue(reader, CrawlerConfiguration.class);
-      return new CrawlerConfiguration.Builder()
-              .addStartPages(String.valueOf(config.getStartPages()))
-              .addIgnoredUrls(String.valueOf(config.getIgnoredUrls()))
-              .addIgnoredWords(String.valueOf(config.getIgnoredWords()))
-              .setParallelism(config.getParallelism())
-              .setImplementationOverride(config.getImplementationOverride())
-              .setMaxDepth(config.getMaxDepth())
-              .setTimeoutSeconds(config.getTimeout().toSecondsPart())
-              .setResultPath(config.getResultPath())
-              .build();
+      return config;
     } catch (IOException e) {
       e.printStackTrace();
       throw e;
-    } finally {
-      if (reader != null) reader.close();
     }
   }
 }
