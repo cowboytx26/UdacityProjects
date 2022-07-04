@@ -33,6 +33,7 @@ public final class CrawlResultWriter {
    */
   public void write(Path path) {
     //should I be doing a buffered writer here? <QUESTION>
+
     try (BufferedWriter writer = Files.newBufferedWriter(path)) {
       write(writer);
     } catch (Exception e) {
