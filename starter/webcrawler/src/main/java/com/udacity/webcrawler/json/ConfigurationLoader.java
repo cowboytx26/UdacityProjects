@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.BufferedReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * A static utility class that loads a JSON configuration file.
@@ -36,6 +35,7 @@ public final class ConfigurationLoader {
     // the reader should be based on a JSON file in the "path" path
     // make sure to close the file
 
+    //Should I be doing a buffered reader here? <QUESTION>
     try (BufferedReader reader = Files.newBufferedReader(path)) {
       return read(reader);
     } catch (IOException e) {

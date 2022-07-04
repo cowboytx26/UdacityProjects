@@ -3,6 +3,12 @@ package com.udacity.webcrawler.json;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.io.BufferedWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Utility class to write a {@link CrawlResult} to file.
@@ -26,9 +32,12 @@ public final class CrawlResultWriter {
    * @param path the file path where the crawl result data should be written.
    */
   public void write(Path path) {
-    // This is here to get rid of the unused variable warning.
-    Objects.requireNonNull(path);
-    // TODO: Fill in this method.
+    //should I be doing a buffered writer here? <QUESTION>
+    try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+      write(writer);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -37,8 +46,12 @@ public final class CrawlResultWriter {
    * @param writer the destination where the crawl result data should be written.
    */
   public void write(Writer writer) {
-    // This is here to get rid of the unused variable warning.
-    Objects.requireNonNull(writer);
-    // TODO: Fill in this method.
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+    try {
+      objectMapper.writeValue(writer, result);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }
