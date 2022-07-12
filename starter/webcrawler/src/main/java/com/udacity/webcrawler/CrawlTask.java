@@ -83,7 +83,7 @@ public class CrawlTask extends RecursiveAction {
         }
 
         for (String link : sublinks) {
-            CrawlTask task = new CrawlTask(url, clock, parserFactory, timeout, popularWordCount,
+            CrawlTask task = new CrawlTask(link, clock, parserFactory, timeout, popularWordCount,
                     maxDepth - 1, ignoredUrls, counts, visitedUrls, pool);
             pool.invoke(task);
         }
