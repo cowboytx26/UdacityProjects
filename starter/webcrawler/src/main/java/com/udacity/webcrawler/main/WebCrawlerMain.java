@@ -42,18 +42,37 @@ public final class WebCrawlerMain {
     //It is stored in the resultPath key value which can be accessed from config.resultPath
     //Since resultPath returns a string, convert it to a path variable
     //Call resultWriter.write(new path variable)
+    //System.out.println("Result Path: " + config.getResultPath());
+    //System.out.println("Profile Output Path: " + config.getProfileOutputPath());
+    System.out.println(System.lineSeparator());
+
     if (config.getResultPath() != null & config.getResultPath().length() > 0) {
       Path resultPath = Path.of(config.getResultPath());
       resultWriter.write(resultPath);
     } else {
-      try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out))) {
+      //Don't close system out here.  You won't be able to print anything to output after that if you do
+      try {
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
         resultWriter.write(writer);
+        System.out.println(System.lineSeparator());
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
 
     // TODO: Write the profile data to a text file (or System.out if the file name is empty)
+    if (config.getProfileOutputPath() != null & config.getProfileOutputPath().length() > 0) {
+      Path profilePath = Path.of(config.getProfileOutputPath());
+      profiler.writeData(profilePath);
+    } else {
+      try {
+        BufferedWriter profileWriter = new BufferedWriter(new OutputStreamWriter(System.out));
+        profiler.writeData(profileWriter);
+        System.out.println(System.lineSeparator());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   public static void main(String[] args) throws Exception {

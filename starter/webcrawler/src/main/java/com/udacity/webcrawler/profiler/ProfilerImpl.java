@@ -1,5 +1,9 @@
 package com.udacity.webcrawler.profiler;
 
+import java.io.BufferedWriter;
+import java.nio.file.Files;
+import java.io.File;
+import java.io.FileWriter;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Writer;
@@ -7,6 +11,9 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 
@@ -33,13 +40,46 @@ final class ProfilerImpl implements Profiler {
     //       ProfilingMethodInterceptor and return a dynamic proxy from this method.
     //       See https://docs.oracle.com/javase/10/docs/api/java/lang/reflect/Proxy.html.
 
-    return delegate;
+    if (Arrays.stream(klass.getMethods()).noneMatch(s -> s.isAnnotationPresent(Profiled.class))) {
+      throw new IllegalArgumentException();
+    }
+
+    if (klass.getMethods().length != 0) {
+      T proxy = (T) Proxy.newProxyInstance(
+              klass.getClassLoader(),
+              new Class[]{klass},
+              new ProfilingMethodInterceptor(delegate, clock, state)
+      );
+
+      return (T) proxy;
+    } else {
+      return (T) delegate;
+    }
   }
 
   @Override
   public void writeData(Path path) {
     // TODO: Write the ProfilingState data to the given file path. If a file already exists at that
     //       path, the new data should be appended to the existing file.
+    File file = new File(path.toString());
+
+    if (!file.exists()){
+      try {
+        file.createNewFile();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    try (
+            FileWriter fileWriter = new FileWriter(file, true);
+            //BufferedWriter writer = Files.newBufferedWriter(path))
+            BufferedWriter writer = new BufferedWriter(fileWriter))
+    {
+      writeData(writer);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

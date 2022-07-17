@@ -57,7 +57,7 @@ final class ParallelWebCrawler implements WebCrawler {
     Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
 
     for (String url : startingUrls) {
-      CrawlTask task = new CrawlTask(url, clock, parserFactoryParallel, timeout, popularWordCount, maxDepth, ignoredUrls, counts, visitedUrls, pool);
+      CrawlTask task = new CrawlTask(url, clock, parserFactoryParallel, deadline, popularWordCount, maxDepth, ignoredUrls, counts, visitedUrls, pool);
       pool.invoke(task);
     }
 

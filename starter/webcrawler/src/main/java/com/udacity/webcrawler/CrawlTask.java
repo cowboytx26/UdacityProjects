@@ -28,7 +28,7 @@ public class CrawlTask extends RecursiveAction {
     private final String url;
     private final Clock clock;
     private final PageParserFactory parserFactory;
-    private final Duration timeout;
+    private final Instant deadline;
     private final int popularWordCount;
     private final int maxDepth;
     private final List<Pattern> ignoredUrls;
@@ -40,13 +40,13 @@ public class CrawlTask extends RecursiveAction {
     //I guess I can pass in clock.  The deadline is a function of the clock plus the timeout, so I will need to test it
     //out at every fork.
     //url, clock, parserFactoryParallel, timeout, popularWordCount, maxDepth, ignoredUrls, counts, visitedUrls
-    public CrawlTask(String url, Clock clock, PageParserFactory parserFactory, Duration timeout, int popularWordCount,
+    public CrawlTask(String url, Clock clock, PageParserFactory parserFactory, Instant deadline, int popularWordCount,
                      int maxDepth, List<Pattern> ignoredUrls, Map<String, Integer> counts,
                      Set<String> visitedUrls, ForkJoinPool pool) {
         this.url = url;
         this.clock = clock;
         this.parserFactory = parserFactory;
-        this.timeout = timeout;
+        this.deadline = deadline;
         this.popularWordCount = popularWordCount;
         this.maxDepth = maxDepth;
         this.ignoredUrls = ignoredUrls;
@@ -59,10 +59,19 @@ public class CrawlTask extends RecursiveAction {
     @Override
     protected void compute() {
 
-        Instant deadline = clock.instant().plus(timeout);
-        if (maxDepth == 0 || clock.instant().isAfter(deadline)) {
+        if (maxDepth == 0) {
+            //System.out.println("Finished tree at MaxDepth");
             return;
         }
+
+        if (clock.instant().isAfter(deadline)) {
+            //System.out.println("Ran out of time");
+            return;
+        }
+
+        //if (maxDepth > 0) {
+            //System.out.println("Starting parse on: " + url + " with MaxDepth: " + maxDepth + " with deadline: " + deadline + " at " + clock.instant());
+        //}
 
         for (Pattern pattern : ignoredUrls) {
             if (pattern.matcher(url).matches()) {
@@ -82,8 +91,12 @@ public class CrawlTask extends RecursiveAction {
             counts.compute(e.getKey(), (k,v)->(v==null)?e.getValue():e.getValue()+v);
         }
 
+        //if (maxDepth > 0) {
+        //    System.out.println("Found " + result.getLinks().size() + " sub links");
+        //}
+
         for (String link : sublinks) {
-            CrawlTask task = new CrawlTask(link, clock, parserFactory, timeout, popularWordCount,
+            CrawlTask task = new CrawlTask(link, clock, parserFactory, deadline, popularWordCount,
                     maxDepth - 1, ignoredUrls, counts, visitedUrls, pool);
             pool.invoke(task);
         }

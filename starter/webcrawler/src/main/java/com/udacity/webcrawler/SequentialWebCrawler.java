@@ -71,28 +71,48 @@ final class SequentialWebCrawler implements WebCrawler {
       int maxDepth,
       Map<String, Integer> counts,
       Set<String> visitedUrls) {
-    if (maxDepth == 0 || clock.instant().isAfter(deadline)) {
-      return;
-    }
-    for (Pattern pattern : ignoredUrls) {
-      if (pattern.matcher(url).matches()) {
+
+      //if (maxDepth > 0) {
+      //    System.out.println("Starting parse on: " + url + " with MaxDepth: " + maxDepth + " with deadline: " + deadline + " at " + clock.instant());
+      //}
+
+      if (maxDepth == 0) {
+          //System.out.println("Finished tree at MaxDepth");
+          return;
+      }
+
+      if (clock.instant().isAfter(deadline)) {
+          //System.out.println("Ran out of time");
+          return;
+      }
+
+      for (Pattern pattern : ignoredUrls) {
+        if (pattern.matcher(url).matches()) {
+          return;
+        }
+      }
+
+      if (visitedUrls.contains(url)) {
         return;
       }
-    }
-    if (visitedUrls.contains(url)) {
-      return;
-    }
-    visitedUrls.add(url);
-    PageParser.Result result = parserFactory.get(url).parse();
-    for (Map.Entry<String, Integer> e : result.getWordCounts().entrySet()) {
-      if (counts.containsKey(e.getKey())) {
-        counts.put(e.getKey(), e.getValue() + counts.get(e.getKey()));
-      } else {
-        counts.put(e.getKey(), e.getValue());
+
+      visitedUrls.add(url);
+      PageParser.Result result = parserFactory.get(url).parse();
+
+      for (Map.Entry<String, Integer> e : result.getWordCounts().entrySet()) {
+        if (counts.containsKey(e.getKey())) {
+          counts.put(e.getKey(), e.getValue() + counts.get(e.getKey()));
+        } else {
+          counts.put(e.getKey(), e.getValue());
+        }
+      }
+
+      //if (maxDepth > 0) {
+      //    System.out.println("Found " + result.getLinks().size() + " sub links");
+      //}
+
+      for (String link : result.getLinks()) {
+        crawlInternal(link, deadline, maxDepth - 1, counts, visitedUrls);
       }
     }
-    for (String link : result.getLinks()) {
-      crawlInternal(link, deadline, maxDepth - 1, counts, visitedUrls);
-    }
-  }
 }
