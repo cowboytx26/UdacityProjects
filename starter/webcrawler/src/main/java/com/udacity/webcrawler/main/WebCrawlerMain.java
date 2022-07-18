@@ -38,19 +38,12 @@ public final class WebCrawlerMain {
     CrawlResultWriter resultWriter = new CrawlResultWriter(result);
     // TODO: Write the crawl results to a JSON file (or System.out if the file name is empty)
 
-    //Pull the path out of the config which is passed into the constructor in the config variable
-    //It is stored in the resultPath key value which can be accessed from config.resultPath
-    //Since resultPath returns a string, convert it to a path variable
-    //Call resultWriter.write(new path variable)
-    //System.out.println("Result Path: " + config.getResultPath());
-    //System.out.println("Profile Output Path: " + config.getProfileOutputPath());
     System.out.println(System.lineSeparator());
 
     if (config.getResultPath() != null & config.getResultPath().length() > 0) {
       Path resultPath = Path.of(config.getResultPath());
       resultWriter.write(resultPath);
     } else {
-      //Don't close system out here.  You won't be able to print anything to output after that if you do
       try {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
         resultWriter.write(writer);

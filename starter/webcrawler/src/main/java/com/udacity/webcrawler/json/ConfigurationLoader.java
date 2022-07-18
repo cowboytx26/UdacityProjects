@@ -30,12 +30,7 @@ public final class ConfigurationLoader {
    * @return the loaded {@link CrawlerConfiguration}.
    */
   public CrawlerConfiguration load() {
-    // TODO: Fill in this method.
-    // create a reader to pass to read()
-    // the reader should be based on a JSON file in the "path" path
-    // make sure to close the file
 
-    //Should I be doing a buffered reader here? <QUESTION>
     try (BufferedReader reader = Files.newBufferedReader(path)) {
       return read(reader);
     } catch (IOException e) {

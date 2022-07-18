@@ -36,10 +36,6 @@ public class CrawlTask extends RecursiveAction {
     private final Set<String> visitedUrls;
     private final ForkJoinPool pool;
 
-    //I should be passing in the counts collection and visited URL's just like in the sequential version of this call
-    //I guess I can pass in clock.  The deadline is a function of the clock plus the timeout, so I will need to test it
-    //out at every fork.
-    //url, clock, parserFactoryParallel, timeout, popularWordCount, maxDepth, ignoredUrls, counts, visitedUrls
     public CrawlTask(String url, Clock clock, PageParserFactory parserFactory, Instant deadline, int popularWordCount,
                      int maxDepth, List<Pattern> ignoredUrls, Map<String, Integer> counts,
                      Set<String> visitedUrls, ForkJoinPool pool) {
@@ -60,18 +56,12 @@ public class CrawlTask extends RecursiveAction {
     protected void compute() {
 
         if (maxDepth == 0) {
-            //System.out.println("Finished tree at MaxDepth");
             return;
         }
 
         if (clock.instant().isAfter(deadline)) {
-            //System.out.println("Ran out of time");
             return;
         }
-
-        //if (maxDepth > 0) {
-            //System.out.println("Starting parse on: " + url + " with MaxDepth: " + maxDepth + " with deadline: " + deadline + " at " + clock.instant());
-        //}
 
         for (Pattern pattern : ignoredUrls) {
             if (pattern.matcher(url).matches()) {
@@ -91,15 +81,9 @@ public class CrawlTask extends RecursiveAction {
             counts.compute(e.getKey(), (k,v)->(v==null)?e.getValue():e.getValue()+v);
         }
 
-        //if (maxDepth > 0) {
-        //    System.out.println("Found " + result.getLinks().size() + " sub links");
-        //}
-
-        for (String link : sublinks) {
-            CrawlTask task = new CrawlTask(link, clock, parserFactory, deadline, popularWordCount,
-                    maxDepth - 1, ignoredUrls, counts, visitedUrls, pool);
-            pool.invoke(task);
-        }
+        List<CrawlTask> crawlTasks = result.getLinks().stream().map(link -> new CrawlTask(link, clock, parserFactory, deadline, popularWordCount,
+                maxDepth - 1, ignoredUrls, counts, visitedUrls, pool)).collect(Collectors.toList());
+        invokeAll(crawlTasks);
         return;
     }
 }

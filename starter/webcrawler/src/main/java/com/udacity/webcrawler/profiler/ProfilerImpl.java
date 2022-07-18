@@ -73,7 +73,6 @@ final class ProfilerImpl implements Profiler {
 
     try (
             FileWriter fileWriter = new FileWriter(file, true);
-            //BufferedWriter writer = Files.newBufferedWriter(path))
             BufferedWriter writer = new BufferedWriter(fileWriter))
     {
       writeData(writer);

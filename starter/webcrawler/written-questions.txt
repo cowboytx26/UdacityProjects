@@ -11,23 +11,34 @@ Q1. Run the web crawler using the configurations located at src/main/config/writ
 
     Why did the parser take more time when run with ParallelWebCrawler?
 
+    Although the parser took more time when run in parallel, it was only because it did more work in nearly the same amount of time.
+    The parallel parser parsed 12 URL's versus 3 URL's in the sequential parser.
+    Each thread's time was summed up to arrive at the total amount of time spent on parsing.  The time command shows
+    that the actual amount of time spent during the program execution was less than the time reported by the parser.
+
 
 Q2. Your manager ran your crawler on her old personal computer, using the configurations from Q1, and she notices that
     the sequential crawler actually outperforms the parallel crawler. She would like to know why.
 
     (a) Suggest one reason why the sequential web crawler was able to read more web pages than the parallel crawler.
         (Hint: Try setting "parallelism" to 1 in the JSON configs to simulate your manager's computer.)
+    The reason that the sequential web crawler was able to read more pages than the parallel crawler is likely that there was
+    no parallel processing ability of the older computer.
 
     (b) Suggest one scenario in which the parallel web crawler will almost certainly perform better than the sequential
         crawler. Why will it perform better?
+    One scenario in which the parallel crawler will perform better is when it has access to a multi-core computer that
+    will enable the program to run multiple parsings in parallel.
 
 
 Q3. Analyze your method profiler through the lens of Aspect Oriented Programming, by answering the following questions:
 
     (a) What cross-cutting concern is being addressed by the com.udacity.webcrawler.profiler.Profiler class?
+    Performance monitoring is the cross cutting concern that is addressed by the profiler class.
 
     (b) What are the join points of the Profiler in the web crawler program?
-
+    Join points are code execution points where advice could be applied.  The join points in the Profiler are:
+    wrap and writeData
 
 Q4. Identify three (3) different design patterns used in this project, and explain which interfaces, classes, and/or
     libraries use or implement those design patterns.
@@ -35,4 +46,30 @@ Q4. Identify three (3) different design patterns used in this project, and expla
     For each pattern, name one thing about the pattern that you LIKED, and one thing you DISLIKED. If you did not like
     anything, you can name two things you disliked.
 
+    1.) Strategy Design Pattern
+    - NoOpProfiler & ProfilerImpl classes both implemented the Profiler interface; each implementation defined a strategy
+      to solve the task.
+    - The thing that I liked was that it was used in WebCrawlerTest to create a GUICE injector which meant that I could use
+      the provided test methods without having to have had written the ProfilerImpl yet.  This helped reduce the complexity
+      of the code I needed to deliver.  In turn, this allowed me to focus on smaller complex tasks at a single time.
+    - The thing that I disliked was that the GUICE injector which is facilitated by this Strategy Design Pattern was a 
+      little hard to understand.  I am not completely sure that I understand it, but I feel like I have a basic idea
+      of what it is providing.
 
+    2.) Dependency Injection Pattern
+    - SequentialWebCrawler & ParallelWebCrawler both implemented the DI Pattern.  The injection was configured in the 
+      WebCrawlerModule class.
+    - I liked having the functionality to provide an override in the configuration JSON file to tell the code which
+      type of webcrawler I wanted to run.  This really facilitated testing the sequential vs parallel web crawlers
+      at the end of the project.  I also liked that the injection was able to create a singleton so that I didn't 
+      have to code that.
+    - I disliked having to figure out where the code was that implemented the injection.  The WebCrawlerModule was
+      another piece of code that I had to review to try to understand what it was doing.  It is also somewhat complex.
+
+    3.) Builder Design Pattern
+    - CrawlResult class implemented the Builder Design Pattern by providing the builder method to construct CrawlResults
+    - I did not like that there was a lot of extra code put in this module to facilitate the builder design pattern
+      while not reaping the benefit.  For example, in PageParser there were a lot of elements for its constructor, so
+      the builder design pattern made sense.  In CrawlResult, there were just two elements and those elements were 
+      provided everytime a CrawlResult was created.
+    - I liked that it facilitated the creation of immutable elements - the wordCounts map and the number of urlsVisited. 

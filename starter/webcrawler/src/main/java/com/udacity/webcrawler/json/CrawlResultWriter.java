@@ -32,7 +32,6 @@ public final class CrawlResultWriter {
    * @param path the file path where the crawl result data should be written.
    */
   public void write(Path path) {
-    //should I be doing a buffered writer here? <QUESTION>
 
     try (BufferedWriter writer = Files.newBufferedWriter(path)) {
       write(writer);
