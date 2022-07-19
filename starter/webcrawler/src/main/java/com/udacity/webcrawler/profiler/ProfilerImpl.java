@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -58,7 +59,7 @@ final class ProfilerImpl implements Profiler {
   }
 
   @Override
-  public void writeData(Path path) {
+  public void writeData(Path path) throws IOException {
     // TODO: Write the ProfilingState data to the given file path. If a file already exists at that
     //       path, the new data should be appended to the existing file.
     File file = new File(path.toString());
@@ -72,8 +73,7 @@ final class ProfilerImpl implements Profiler {
     }
 
     try (
-            FileWriter fileWriter = new FileWriter(file, true);
-            BufferedWriter writer = new BufferedWriter(fileWriter))
+            BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND))
     {
       writeData(writer);
     } catch (Exception e) {

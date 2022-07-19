@@ -2,6 +2,7 @@ package com.udacity.webcrawler.profiler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.RuntimeException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.time.Clock;
@@ -35,24 +36,24 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
     //       methods, the interceptor should record how long the method call took, using the
     //       ProfilingState methods.
 
-    //for profiled methods only
-    if (method.getAnnotation(Profiled.class) != null) {
-      //record start time
-      Instant start = clock.instant();
-      //invoke the method
-      try {
-        return method.invoke(delegate, args);
-      } catch (InvocationTargetException ite) {
-        throw ite.getCause();
-      } catch (Exception e){
-        throw e;
-      } finally {
-        //record how long the method call took using state.record even if the method throws an exception
+
+    //record start time
+    Instant start = clock.instant();
+    //invoke the method
+    try {
+      return method.invoke(delegate, args);
+    } catch (InvocationTargetException ite) {
+      throw ite.getCause();
+    } catch (IllegalAccessException e){
+      throw new RuntimeException(e);
+    } finally {
+      //record how long the method call took using state.record even if the method throws an exception
+      //for profiled methods only
+      if (method.getAnnotation(Profiled.class) != null) {
         state.record(delegate.getClass(), method, Duration.between(start, clock.instant()));
-        //System.out.println("Duration of " + method + ": " + Duration.between(start, clock.instant()));
       }
     }
 
-    return method.invoke(delegate, args);
+    //return method.invoke(delegate, args);
   }
 }

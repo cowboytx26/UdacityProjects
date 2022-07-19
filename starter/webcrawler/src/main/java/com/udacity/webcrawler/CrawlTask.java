@@ -69,11 +69,13 @@ public class CrawlTask extends RecursiveAction {
             }
         }
 
-        if (visitedUrls.contains(url)) {
+        //If the URL is not in the set, add returns true which is false when negated and the code continues
+        //If the URL is in the set, add returns false which is true when negated and the code returns
+        //and does not continue
+        if (!visitedUrls.add(url)) {
             return;
         }
 
-        visitedUrls.add(url);
         PageParser.Result result = parserFactory.get(url).parse();
         List<String> sublinks =result.getLinks();
 

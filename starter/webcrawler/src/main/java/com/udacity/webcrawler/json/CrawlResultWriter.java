@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Utility class to write a {@link CrawlResult} to file.
@@ -33,7 +34,7 @@ public final class CrawlResultWriter {
    */
   public void write(Path path) {
 
-    try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+    try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE)) {
       write(writer);
     } catch (Exception e) {
       e.printStackTrace();
